@@ -1,5 +1,4 @@
---+----------------------------------------------------------------------------
---| 
+
 --| DESCRIPTION   : This file implements the top level module for a BASYS 
 --|
 --|     Ripple-Carry Adder: S = A + B
@@ -42,29 +41,57 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-
 entity top_basys3 is
 	port(
-		-- Switches
-		sw		:	in  std_logic_vector(8 downto 0);
+		-- Switches (Inputs)
+		sw		:	in  std_logic_vector(15 downto 0); -- Expand to 16 bits
 		
-		-- LEDs
+		-- LEDs (Outputs)
 		led	    :	out	std_logic_vector(15 downto 0)
 	);
 end top_basys3;
 
 architecture top_basys3_arch of top_basys3 is 
-	
-    -- declare the component of your top-level design
 
-    -- declare any signals you will need	
-  
+	-- Declare the Ripple-Carry Adder component
+	component ripple_adder
+		port(
+			A     : in  std_logic_vector(3 downto 0);
+			B     : in  std_logic_vector(3 downto 0);
+			Cin   : in  std_logic;
+			S     : out std_logic_vector(3 downto 0);
+			Cout  : out std_logic
+		);
+	end component;
+
+	-- Internal Signals for Connections
+	signal w_A     : std_logic_vector(3 downto 0);
+	signal w_B     : std_logic_vector(3 downto 0);
+	signal w_Cin   : std_logic;
+	signal w_Sum   : std_logic_vector(3 downto 0);
+	signal w_Cout  : std_logic;
+
 begin
-	-- PORT MAPS --------------------
-   
-	---------------------------------
-	
-	-- CONCURRENT STATEMENTS --------
+
+	-- Extract Inputs from Switches
+	w_A   <= sw(4 downto 1);      -- A comes from switches 4-1
+	w_B   <= sw(15 downto 12);    -- B comes from switches 15-12
+	w_Cin <= sw(0);               -- Cin comes from switch 0
+
+	-- Instantiate the Ripple-Carry Adder
+	u1: ripple_adder
+	port map(
+		A     => w_A,
+		B     => w_B,
+		Cin   => w_Cin,
+		S     => w_Sum,
+		Cout  => w_Cout
+	);
+
+	-- Assign Outputs to LEDs
+	led(3 downto 0)  <= w_Sum;   -- Display sum on LED 3-0
+	led(15)          <= w_Cout;  -- Display carry-out on LED 15
 	led(14 downto 4) <= (others => '0'); -- Ground unused LEDs
-	---------------------------------
+
 end top_basys3_arch;
+
